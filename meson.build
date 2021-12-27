@@ -1,14 +1,16 @@
 project(
   'mpd-httpd',
-  'c',
+  'cpp',
   version : '0.0.1',
   default_options : [
     'warning_level=3',
-    'libmpdclient:default_library=static'
+    'cpp_std=c++11'
   ]
 )
 
-cc = meson.get_compiler('c')
+cmake = import('cmake')
+
+cc = meson.get_compiler('cpp')
 
 if build_machine.system() == 'darwin'
   libmpdclient_dep = cc.find_library('libmpdclient', dirs: ['/usr/lib', '/usr/local/lib'])
@@ -16,16 +18,15 @@ else
   libmpdclient_dep = dependency('libmpdclient', version: '>= 2.16', fallback: ['libmpdclient', 'libmpdclient_dep'])
 endif
 
-facil_dep = subproject('facil').get_variable('facil_dep')
-cjson_dep = subproject('cjson').get_variable('libcjson_dep')
+crow_proj = cmake.subproject('crow')
+crow_dep = crow_proj.dependency('Crow')
 
 exe = executable(
   'mpd-httpd',
-  'src/mpd.c',
-  'src/main.c',
+  'src/mpd.cpp',
+  'src/main.cpp',
   dependencies: [
-    facil_dep,
-    cjson_dep,
+    crow_dep,
     libmpdclient_dep
   ],
   install : true
